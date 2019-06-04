@@ -16,11 +16,33 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+@SuppressWarnings("unused")
 public class PackageResolver {
-	private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-	
-    public void forEach(String basePackage, Class annotationClass, BiConsumer<Class, Map<String, Object>> consumer) {
+
+    private ClassLoader classLoader;
+
+    private ResourcePatternResolver resourcePatternResolver;
+    private MetadataReaderFactory metadataReaderFactory;
+
+
+    public PackageResolver() {
+        this(null);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public PackageResolver(ClassLoader classLoader) {
+
+        this.classLoader = classLoader != null ? classLoader : getClass().getClassLoader();
+
+        resourcePatternResolver = new PathMatchingResourcePatternResolver(classLoader);
+        metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+
+    }
+
+
+    public void forEach(String basePackage, Class annotationClass,
+                            BiConsumer<Class, Map<String, Object>> consumer) {
+
         String type = annotationClass.getName();
 
         try {
@@ -31,7 +53,11 @@ public class PackageResolver {
                     AnnotationMetadata am = metadataReader.getAnnotationMetadata();
 
                     if (am.hasAnnotation(type)) {
-                        Class clazz = Class.forName(metadataReader.getClassMetadata().getClassName());
+                        Class clazz = Class.forName(
+                                metadataReader.getClassMetadata().getClassName(),
+                                true, classLoader
+                        );
+
                         if (!included.contains(clazz)) {
                             included.add(clazz);
                             consumer.accept(clazz, am.getAnnotationAttributes(type));
@@ -42,6 +68,7 @@ public class PackageResolver {
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+
     }
 
 	private static String searchPath(String basePackage) {
@@ -50,4 +77,5 @@ public class PackageResolver {
                         SystemPropertyUtils.resolvePlaceholders(basePackage)) +
                 "/**/*.class";
     }
+
 }
