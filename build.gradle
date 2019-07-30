@@ -1,5 +1,5 @@
 group 'ru.kbakaras.sugar'
-version '0.1.0-SNAPSHOT'
+version '0.1.0'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -24,11 +24,12 @@ task sourceJar(type: Jar) {
 }
 
 publishing {
-    /*repositories {
+    repositories {
         maven {
             url "http://apps-srv-1/nexus/content/repositories/kbakaras"
+            name "Glance"
         }
-    }*/
+    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
