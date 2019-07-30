@@ -26,7 +26,7 @@ task sourceJar(type: Jar) {
 publishing {
     repositories {
         maven {
-            url "http://apps-srv-1/nexus/content/repositories/kbakaras"
+            url "http://apps-srv-1/nexus/content/repositories/glance"
             name "Glance"
         }
     }
